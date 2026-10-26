@@ -53,12 +53,15 @@ class _StubResult:
         self._value = value
 
     def scalar_one_or_none(self) -> Any:
+        """Return the stored row, or None if there is none."""
         return self._value
 
     def scalars(self) -> "_StubResult":
+        """Return this result, so .scalars().first() reads the stored row."""
         return self
 
     def first(self) -> Any:
+        """Return the stored row, or None if there is none."""
         return self._value
 
 
@@ -70,6 +73,17 @@ class StubSession:
         self.calls = 0
 
     async def execute(self, _stmt: Any) -> _StubResult:
+        """Record the call and return the next queued item as a result.
+
+        Args:
+            _stmt: The SQLAlchemy statement. Ignored; the queue decides the result.
+
+        Returns:
+            A result wrapping the next queued item (None if the queue is empty).
+
+        Raises:
+            Exception: The next queued item, if it is an exception.
+        """
         self.calls += 1
         item = self.queue.pop(0) if self.queue else None
         if isinstance(item, Exception):
